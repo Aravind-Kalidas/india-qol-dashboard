@@ -6,6 +6,7 @@ let activeYear = 2025; // timeline year
 let activeMonth = 6; // timeline month (for AQI daily)
 let activeDay = 15; // timeline day (for AQI daily)
 let activeNationalTab = "numbers"; // numbers, rankings
+let showMapNumbers = false; // Hide map numbers on initial load until user clicks something
 
 // Comparison Mode state
 let compareModeActive = false;
@@ -100,7 +101,7 @@ function getMetricCategoryColor(metricKey) {
 
     if (catCoreQuality.includes(metricKey)) return { primary: "#f43f5e", secondary: "rgba(244, 63, 94, 0.08)" };
     if (catSocioEconomics.includes(metricKey)) return { primary: "#0ea5e9", secondary: "rgba(14, 165, 233, 0.08)" };
-    if (catHealthDemographics.includes(metricKey)) return { primary: "#8b5cf6", secondary: "rgba(139, 92, 246, 0.08)" };
+    if (catHealthDemographics.includes(metricKey)) return { primary: "#e11d48", secondary: "rgba(225, 29, 72, 0.08)" };
     if (catEducationInfra.includes(metricKey)) return { primary: "#f59e0b", secondary: "rgba(245, 158, 11, 0.08)" };
     if (catSustainability.includes(metricKey)) return { primary: "#10b981", secondary: "rgba(16, 185, 129, 0.08)" };
     return { primary: "#ec4899", secondary: "rgba(236, 72, 153, 0.08)" };
@@ -296,14 +297,16 @@ function getChoroplethColor(value, metricKey) {
     const catSustainability = ["forest_cover_percentage", "sanitation_score", "renewable_energy_share"];
 
     if (catCoreQuality.includes(metricKey)) {
-        // Bright Yellow -> Vibrant Orange -> Deep Crimson Red
-        return interpolateHexStops(pct, ["#fde047", "#f97316", "#b91c1c"]);
+        // Core Quality: Yellow = Better (1.0), Orange = Mid (0.5), Crimson Red = Worst (0.0)
+        const config = METRICS_CONFIG[metricKey];
+        const goodness = (config && config.reverse) ? (1 - pct) : pct;
+        return interpolateHexStops(goodness, ["#b91c1c", "#f97316", "#fde047"]);
     } else if (catSocioEconomics.includes(metricKey)) {
         // Light Sky Blue -> Vivid Dark Blue -> Deep Purple
         return interpolateHexStops(pct, ["#7dd3fc", "#1d4ed8", "#581c87"]);
     } else if (catHealthDemographics.includes(metricKey)) {
-        // Soft Pink/Peach -> Vibrant Rose/Magenta -> Deep Plum Purple
-        return interpolateHexStops(pct, ["#fbcfe8", "#e11d48", "#4c1d95"]);
+        // Light Pink -> Warm Rose Pink -> Deep Pinkish Red (no purple)
+        return interpolateHexStops(pct, ["#fce7f3", "#f472b6", "#e11d48", "#9f1239"]);
     } else if (catEducationInfra.includes(metricKey)) {
         // Pale Yellow -> Warm Amber/Orange -> Deep Rust Red
         return interpolateHexStops(pct, ["#fef08a", "#f59e0b", "#991b1b"]);
@@ -312,7 +315,7 @@ function getChoroplethColor(value, metricKey) {
         return interpolateHexStops(pct, ["#d9f99d", "#10b981", "#064e3b"]);
     }
     
-    return interpolateHexStops(pct, ["#fde047", "#f97316", "#b91c1c"]);
+    return interpolateHexStops(pct, ["#b91c1c", "#f97316", "#fde047"]);
 }
 
 function updateMap() {
@@ -372,10 +375,11 @@ function updateMap() {
             if (dbState) {
                 const shortName = STATE_SHORT_NAMES[dbState.name] || dbState.name;
                 const catColors = getMetricCategoryColor(selectedMetric);
+                const valHtml = showMapNumbers ? `<span class="label-val">${formattedVal}</span>` : ``;
                 layer.bindTooltip(`
                     <div class="label-container" style="--label-glow: ${catColors.primary}">
                         <span class="label-name">${shortName}</span>
-                        <span class="label-val">${formattedVal}</span>
+                        ${valHtml}
                     </div>
                 `, {
                     permanent: true,
@@ -431,6 +435,7 @@ function updateMap() {
         }
     }).addTo(map);
 
+    handleMapZoomChange();
     updateLegend();
 }
 
@@ -477,9 +482,10 @@ function updateLegend() {
 }
 
 function handleMapZoomChange() {
+    if (!map) return;
     const zoom = map.getZoom();
     const mapElement = document.getElementById("map");
-    if (zoom < 4.2) {
+    if (!showMapNumbers || zoom < 4.2) {
         mapElement.classList.add("leaflet-zoom-hide-labels");
     } else {
         mapElement.classList.remove("leaflet-zoom-hide-labels");
@@ -1239,6 +1245,7 @@ async function renderCompareView() {
 // STATE CHANGERS & TIME-LAPSE PLAYER
 // ==========================================
 function handleStateClick(stateId) {
+    showMapNumbers = true;
     if (compareModeActive) {
         if (selectedStateAId === null) {
             selectedStateAId = stateId;
@@ -1259,6 +1266,7 @@ function handleStateClick(stateId) {
 }
 
 function selectState(stateId) {
+    showMapNumbers = true;
     selectedStateId = stateId;
     refreshActiveView();
     updateMap();
@@ -1396,6 +1404,7 @@ async function triggerAqiSync() {
 // INTERACTIVE GLOBAL CONTROLS
 // ==========================================
 function handleMetricChange() {
+    showMapNumbers = true;
     selectedMetric = document.getElementById("metric-select").value;
     const config = METRICS_CONFIG[selectedMetric];
 
@@ -1423,6 +1432,7 @@ function handleMetricChange() {
 }
 
 function selectSlicerValue(sliceValue, element) {
+    showMapNumbers = true;
     selectedSlice = sliceValue;
     
     const pills = document.querySelectorAll(".slicer-pill");
