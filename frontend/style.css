@@ -654,6 +654,39 @@ input:checked + .switch-slider:before {
     color: rgba(255, 255, 255, 0.6) !important;
 }
 
+/* World / International Average right-side column in KPI cards */
+.world-avg-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    padding-left: 6px;
+    border-left: 1px solid rgba(255, 255, 255, 0.07);
+}
+.world-avg-val {
+    font-family: var(--font-heading);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    line-height: 1.15;
+}
+.world-avg-lbl {
+    font-size: 0.54rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    line-height: 1.1;
+    white-space: nowrap;
+}
+.profile-card.active-metric-kpi .world-avg-col {
+    border-left-color: rgba(255, 255, 255, 0.25) !important;
+}
+.profile-card.active-metric-kpi .world-avg-val {
+    color: #ffffff !important;
+}
+.profile-card.active-metric-kpi .world-avg-lbl {
+    color: rgba(255, 255, 255, 0.72) !important;
+}
+
 /* ==========================================
    INSIGHTS & NEWS DIALOGUE PANEL
    ========================================== */

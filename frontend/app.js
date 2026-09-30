@@ -26,27 +26,27 @@ const charts = {};
 
 // METRIC CONFIGURATIONS (Expanded to 20 metrics)
 const METRICS_CONFIG = {
-    life_index: { label: "Quality of Life Index", fmt: v => v.toFixed(1), min: 55, max: 85, unit: "", slices: null, desc: "Aggregated measure of clean housing, literacy, lifespan, sanitation, and safety representing overall standard of living." },
-    literacy_rate: { label: "Literacy Rate", fmt: v => v.toFixed(1) + "%", min: 60, max: 98, unit: "%", slices: ["overall", "male", "female"], desc: "Percentage of the population aged 7 years and older who can read and write with understanding." },
-    water_quality_score: { label: "Water Quality Score", fmt: v => v.toFixed(1) + "%", min: 50, max: 98, unit: "%", slices: null, desc: "Percentage of tested public drinking water samples meeting national potable safety standards." },
-    equality_index: { label: "Equality / Gender Parity Index", fmt: v => v.toFixed(1), min: 45, max: 85, unit: "", slices: null, desc: "Measures gender parity and equality across wages, secondary education enrollment, and municipal representation." },
-    crime_against_women: { label: "Crime Against Women", fmt: v => v.toFixed(1), min: 5, max: 150, unit: " per 100k", slices: null, reverse: true, desc: "Incidence rate of reported crimes against women per 100,000 female population." },
-    crime_against_minorities: { label: "Crime Against Minorities", fmt: v => v.toFixed(1), min: 0, max: 50, unit: " per 100k", slices: null, reverse: true, desc: "Incidence rate of reported crimes against Scheduled Castes/Tribes per 100,000 minority population." },
-    infant_mortality_rate: { label: "Infant Mortality Rate (IMR)", fmt: v => v.toFixed(1), min: 5, max: 40, unit: " per 1,000", slices: ["overall", "rural", "urban"], reverse: true, desc: "Number of deaths of children under one year of age per 1,000 live births." },
-    child_stunting_rate: { label: "Child Stunting Rate", fmt: v => v.toFixed(1) + "%", min: 15, max: 45, unit: "%", slices: null, reverse: true, desc: "Percentage of children under age 5 who have a low height-for-age, indicating chronic malnutrition." },
-    per_capita_gsdp: { label: "Per Capita GSDP", fmt: v => "₹" + Math.round(v).toLocaleString('en-IN'), min: 50000, max: 450000, unit: " INR", slices: null, desc: "Gross State Domestic Product divided by mid-year population, measuring individual economic output." },
-    unemployment_rate: { label: "Unemployment Rate", fmt: v => v.toFixed(1) + "%", min: 2, max: 12, unit: "%", slices: ["overall", "rural", "urban"], reverse: true, desc: "Percentage of the active labor force that is without work and actively seeking employment." },
-    clean_cooking_fuel: { label: "Access to Clean Cooking Fuel", fmt: v => v.toFixed(1) + "%", min: 40, max: 98, unit: "%", slices: null, desc: "Percentage of households with primary access to clean cooking fuels like LPG or electricity." },
-    internet_penetration: { label: "Internet Penetration", fmt: v => v.toFixed(1) + "%", min: 35, max: 95, unit: "%", slices: ["overall", "rural", "urban"], desc: "Percentage of the population with regular access to mobile broadband or fixed-line internet." },
-    water_scarcity_index: { label: "Water Scarcity Index", fmt: v => v.toFixed(1), min: 15, max: 80, unit: "", slices: null, reverse: true, desc: "Index representing seasonal stress and depletion levels of surface and groundwater resources." },
-    gov_schools_percentage: { label: "Government Schools %", fmt: v => v.toFixed(1) + "%", min: 35, max: 90, unit: "%", slices: null, desc: "Proportion of total primary and secondary schools managed directly by government authorities." },
-    pupil_teacher_ratio: { label: "Pupil-Teacher Ratio (PTR)", fmt: v => v.toFixed(1) + ":1", min: 12, max: 35, unit: ":1", slices: null, reverse: true, desc: "Average number of enrolled students per active teacher in primary and secondary schools." },
-    school_infrastructure_score: { label: "School Infrastructure Score", fmt: v => v.toFixed(1) + "%", min: 50, max: 98, unit: "%", slices: null, desc: "Percentage of schools equipped with basic electricity, drinking water, and separate functional toilets." },
-    forest_cover_percentage: { label: "Forest Cover %", fmt: v => v.toFixed(1) + "%", min: 5, max: 85, unit: "%", slices: null, desc: "Proportion of geographical area covered by forest canopy density of 10% or more." },
-    sanitation_score: { label: "Sanitation Index", fmt: v => v.toFixed(1), min: 50, max: 95, unit: "", slices: null, desc: "Index evaluating solid waste management, wastewater treatment, and open-defecation-free status." },
-    renewable_energy_share: { label: "Renewable Energy Share %", fmt: v => v.toFixed(1) + "%", min: 5, max: 70, unit: "%", slices: null, desc: "Percentage of total installed grid capacity sourced from solar, wind, biomass, and hydro energy." },
-    birth_rate_index: { label: "Birth Rate Index", fmt: v => v.toFixed(1), min: 8, max: 25, unit: " per 1,000", slices: null, reverse: true, desc: "Annual number of live births per 1,000 mid-year population." },
-    aqi: { label: "Air Quality Index (AQI)", fmt: v => Math.round(v), min: 30, max: 200, unit: "", slices: null, reverse: true, desc: "Air Quality Index mapping key pollutants (PM2.5, PM10) to health risk levels." }
+    life_index: { label: "Quality of Life Index", fmt: v => v.toFixed(1), min: 55, max: 85, unit: "", slices: null, worldAvg: "71.4", desc: "Aggregated measure of clean housing, literacy, lifespan, sanitation, and safety representing overall standard of living." },
+    literacy_rate: { label: "Literacy Rate", fmt: v => v.toFixed(1) + "%", min: 60, max: 98, unit: "%", slices: ["overall", "male", "female"], worldAvg: "87.0%", desc: "Percentage of the population aged 7 years and older who can read and write with understanding." },
+    water_quality_score: { label: "Water Quality Score", fmt: v => v.toFixed(1) + "%", min: 50, max: 98, unit: "%", slices: null, worldAvg: "74.0%", desc: "Percentage of tested public drinking water samples meeting national potable safety standards." },
+    equality_index: { label: "Equality / Gender Parity Index", fmt: v => v.toFixed(1), min: 45, max: 85, unit: "", slices: null, worldAvg: "68.5", desc: "Measures gender parity and equality across wages, secondary education enrollment, and municipal representation." },
+    crime_against_women: { label: "Crime Against Women", fmt: v => v.toFixed(1), min: 5, max: 150, unit: " per 100k", slices: null, reverse: true, worldAvg: "31.0", desc: "Incidence rate of reported crimes against women per 100,000 female population." },
+    crime_against_minorities: { label: "Crime Against Minorities", fmt: v => v.toFixed(1), min: 0, max: 50, unit: " per 100k", slices: null, reverse: true, worldAvg: "12.5", desc: "Incidence rate of reported crimes against Scheduled Castes/Tribes per 100,000 minority population." },
+    infant_mortality_rate: { label: "Infant Mortality Rate (IMR)", fmt: v => v.toFixed(1), min: 5, max: 40, unit: " per 1,000", slices: ["overall", "rural", "urban"], reverse: true, worldAvg: "27.0", desc: "Number of deaths of children under one year of age per 1,000 live births." },
+    child_stunting_rate: { label: "Child Stunting Rate", fmt: v => v.toFixed(1) + "%", min: 15, max: 45, unit: "%", slices: null, reverse: true, worldAvg: "22.3%", desc: "Percentage of children under age 5 who have a low height-for-age, indicating chronic malnutrition." },
+    per_capita_gsdp: { label: "Per Capita GSDP", fmt: v => "₹" + Math.round(v).toLocaleString('en-IN'), min: 50000, max: 450000, unit: " INR", slices: null, worldAvg: "₹11.2L", desc: "Gross State Domestic Product divided by mid-year population, measuring individual economic output." },
+    unemployment_rate: { label: "Unemployment Rate", fmt: v => v.toFixed(1) + "%", min: 2, max: 12, unit: "%", slices: ["overall", "rural", "urban"], reverse: true, worldAvg: "5.1%", desc: "Percentage of the active labor force that is without work and actively seeking employment." },
+    clean_cooking_fuel: { label: "Access to Clean Cooking Fuel", fmt: v => v.toFixed(1) + "%", min: 40, max: 98, unit: "%", slices: null, worldAvg: "74.0%", desc: "Percentage of households with primary access to clean cooking fuels like LPG or electricity." },
+    internet_penetration: { label: "Internet Penetration", fmt: v => v.toFixed(1) + "%", min: 35, max: 95, unit: "%", slices: ["overall", "rural", "urban"], worldAvg: "67.4%", desc: "Percentage of the population with regular access to mobile broadband or fixed-line internet." },
+    water_scarcity_index: { label: "Water Scarcity Index", fmt: v => v.toFixed(1), min: 15, max: 80, unit: "", slices: null, reverse: true, worldAvg: "34.0", desc: "Index representing seasonal stress and depletion levels of surface and groundwater resources." },
+    gov_schools_percentage: { label: "Government Schools %", fmt: v => v.toFixed(1) + "%", min: 35, max: 90, unit: "%", slices: null, worldAvg: "81.5%", desc: "Proportion of total primary and secondary schools managed directly by government authorities." },
+    pupil_teacher_ratio: { label: "Pupil-Teacher Ratio (PTR)", fmt: v => v.toFixed(1) + ":1", min: 12, max: 35, unit: ":1", slices: null, reverse: true, worldAvg: "21.0:1", desc: "Average number of enrolled students per active teacher in primary and secondary schools." },
+    school_infrastructure_score: { label: "School Infrastructure Score", fmt: v => v.toFixed(1) + "%", min: 50, max: 98, unit: "%", slices: null, worldAvg: "78.5%", desc: "Percentage of schools equipped with basic electricity, drinking water, and separate functional toilets." },
+    forest_cover_percentage: { label: "Forest Cover %", fmt: v => v.toFixed(1) + "%", min: 5, max: 85, unit: "%", slices: null, worldAvg: "31.2%", desc: "Proportion of geographical area covered by forest canopy density of 10% or more." },
+    sanitation_score: { label: "Sanitation Index", fmt: v => v.toFixed(1), min: 50, max: 95, unit: "", slices: null, worldAvg: "78.0", desc: "Index evaluating solid waste management, wastewater treatment, and open-defecation-free status." },
+    renewable_energy_share: { label: "Renewable Energy Share %", fmt: v => v.toFixed(1) + "%", min: 5, max: 70, unit: "%", slices: null, worldAvg: "30.3%", desc: "Percentage of total installed grid capacity sourced from solar, wind, biomass, and hydro energy." },
+    birth_rate_index: { label: "Birth Rate Index", fmt: v => v.toFixed(1), min: 8, max: 25, unit: " per 1,000", slices: null, reverse: true, worldAvg: "16.3", desc: "Annual number of live births per 1,000 mid-year population." },
+    aqi: { label: "Air Quality Index (AQI)", fmt: v => Math.round(v), min: 30, max: 200, unit: "", slices: null, reverse: true, worldAvg: "38", desc: "Air Quality Index mapping key pollutants (PM2.5, PM10) to health risk levels." }
 };
 
 // STATE SHORT NAME MAPPING FOR CLEAR LABELS ON MAP
@@ -709,9 +709,15 @@ function renderNationalMetricsGrid() {
         } else {
             card.innerHTML = `
                 <div class="profile-title">${config.label}</div>
-                <div class="profile-value-row">
-                    <div class="profile-value">${config.fmt(avgVal)}</div>
-                    <span class="profile-comparison neutral">National Avg</span>
+                <div class="aqi-compact-row">
+                    <div class="profile-value-row">
+                        <div class="profile-value">${config.fmt(avgVal)}</div>
+                        <span class="profile-comparison neutral">National Avg</span>
+                    </div>
+                    <div class="world-avg-col">
+                        <div class="world-avg-val">${config.worldAvg || "—"}</div>
+                        <span class="world-avg-lbl">World Avg</span>
+                    </div>
                 </div>
             `;
         }
@@ -890,9 +896,15 @@ function renderStateMetricsGrid(data) {
         } else {
             card.innerHTML = `
                 <div class="profile-title">${config.label}</div>
-                <div class="profile-value-row">
-                    <div class="profile-value">${config.fmt(value)}</div>
-                    <span class="profile-comparison ${compClass}">${compText}</span>
+                <div class="aqi-compact-row">
+                    <div class="profile-value-row">
+                        <div class="profile-value">${config.fmt(value)}</div>
+                        <span class="profile-comparison ${compClass}">${compText}</span>
+                    </div>
+                    <div class="world-avg-col">
+                        <div class="world-avg-val">${config.worldAvg || "—"}</div>
+                        <span class="world-avg-lbl">World Avg</span>
+                    </div>
                 </div>
             `;
         }
