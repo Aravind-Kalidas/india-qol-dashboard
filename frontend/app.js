@@ -201,14 +201,11 @@ function initMap() {
     map = L.map("map", {
         zoomSnap: 0.1,
         zoomDelta: 0.5,
+        minZoom: 3,
+        maxZoom: 8,
         attributionControl: false,
         zoomControl: false
     }).setView([22.1, 78.5], isMobile ? 3.6 : 4.4);
-
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png", {
-        maxZoom: 8,
-        minZoom: 3
-    }).addTo(map);
     
     L.control.zoom({ position: 'topright' }).addTo(map);
 }
