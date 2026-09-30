@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>India Quality-of-Life & Socio-Economic Monitor</title>
+    
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        
+        <!-- LEFT COLUMN: MAP & GEO CONTROLS -->
+        <div class="map-column">
+            
+            <!-- Compact App Header -->
+            <header class="app-header-compact">
+                <div class="header-logo">
+                    <div class="logo-icon"></div>
+                    <div>
+                        <h1>India Statistics Monitor</h1>
+                        <p class="subtitle">Socio-Economic & Quality-of-Life Platform</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <div id="connection-badge" class="status-badge active">
+                        <span class="pulse-dot"></span>
+                        <span class="badge-text">AQI: Connected</span>
+                    </div>
+                    <button id="refresh-aqi-btn" class="btn btn-secondary btn-icon-only" title="Sync Live AQI">
+                        <i data-lucide="refresh-cw"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Floating Controls -->
+            <div class="map-controls-overlay">
+                <div class="selector-group">
+                    <label for="metric-select"><i data-lucide="bar-chart-2"></i> Selected Metric:</label>
+                    <select id="metric-select" onchange="handleMetricChange()">
+                        <optgroup label="Core Quality of Life">
+                            <option value="life_index">Quality of Life Index</option>
+                            <option value="literacy_rate" selected>Literacy Rate</option>
+                            <option value="aqi">Air Quality Index (AQI)</option>
+                            <option value="water_quality_score">Water Quality Score</option>
+                            <option value="water_scarcity_index">Water Scarcity Index</option>
+                        </optgroup>
+                        <optgroup label="Socio-Economics">
+                            <option value="per_capita_gsdp">Per Capita GSDP (INR)</option>
+                            <option value="unemployment_rate">Unemployment Rate</option>
+                            <option value="equality_index">Equality / Gender Parity Index</option>
+                            <option value="internet_penetration">Internet Penetration</option>
+                            <option value="clean_cooking_fuel">Access to Clean Cooking Fuel</option>
+                        </optgroup>
+                        <optgroup label="Health & Demographics">
+                            <option value="infant_mortality_rate">Infant Mortality Rate (IMR)</option>
+                            <option value="birth_rate_index">Birth Rate Index</option>
+                            <option value="child_stunting_rate">Child Stunting Rate</option>
+                            <option value="crime_against_women">Crime Against Women (per 100k)</option>
+                            <option value="crime_against_minorities">Crime Against Minorities (per 100k)</option>
+                        </optgroup>
+                        <optgroup label="Education Infrastructure">
+                            <option value="gov_schools_percentage">Government Schools %</option>
+                            <option value="pupil_teacher_ratio">Pupil-Teacher Ratio (PTR)</option>
+                            <option value="school_infrastructure_score">School Infrastructure Index</option>
+                        </optgroup>
+                        <optgroup label="Sustainability & Environment">
+                            <option value="forest_cover_percentage">Forest Cover %</option>
+                            <option value="sanitation_score">Sanitation Index</option>
+                            <option value="renewable_energy_share">Renewable Energy Share %</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <!-- Dynamic Slicers -->
+                <div id="slicer-container" class="slicer-group hidden">
+                    <div id="slicer-pills" class="slicer-pills">
+                        <!-- Dynamic Pills Injected Here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaflet Map Container -->
+            <div id="map"></div>
+
+            <!-- Time-Lapse Year Timeline Player (Bottom Center of Map) -->
+            <div class="timeline-player-overlay">
+                <!-- Yearly Slider Container -->
+                <div class="timeline-slider-wrapper" id="yearly-player-container">
+                    <input type="range" id="year-slider" min="2021" max="2025" step="1" value="2025" oninput="handleYearSliderChange(this.value)">
+                    <div class="timeline-years">
+                        <span>2021</span>
+                        <span>2022</span>
+                        <span>2023</span>
+                        <span>2024</span>
+                        <span>2025</span>
+                    </div>
+                </div>
+                <div class="timeline-active-year" id="timeline-year-display">2025</div>
+                
+                <!-- AQI Daily/Monthly Container (Hidden by default) -->
+                <div class="timeline-slider-wrapper hidden" id="aqi-player-container">
+                    <div class="aqi-switcher-row">
+                        <select id="aqi-month-select" onchange="handleAqiDateChange()">
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6" selected>June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                        <div class="aqi-day-slider-container">
+                            <input type="range" id="aqi-day-slider" min="1" max="28" step="1" value="15" oninput="handleAqiDateChange()">
+                            <div class="timeline-years">
+                                <span>Day 1</span>
+                                <span>Day 14</span>
+                                <span id="aqi-max-day-label">Day 28</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="timeline-active-year hidden" id="timeline-aqi-display">Jun 15</div>
+            </div>
+
+            <!-- Floating Map Legend -->
+            <div class="map-legend" id="map-legend">
+                <!-- Legend Color Bar and Labels Injected Here -->
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN: DYNAMIC STATS PANEL -->
+        <div class="details-column">
+            
+            <!-- VIEW 1: INDIA OVERVIEW (Active by default, selectedStateId == null) -->
+            <div id="view-national" class="details-view active">
+                <div class="view-header">
+                    <h2><i data-lucide="globe"></i> India National Overview (<span class="active-year-text">2025</span>)</h2>
+                    <p class="view-subtitle">Select a metric on the left to see ranks. Click states on the map to see state deep-dives.</p>
+                </div>
+
+                <!-- Comparison Toggle Switch -->
+                <div class="comparison-mode-toggle">
+                    <label class="switch-container">
+                        <input type="checkbox" id="compare-mode-checkbox" onchange="toggleCompareMode(this.checked)">
+                        <span class="switch-slider"></span>
+                    </label>
+                    <span class="compare-toggle-label"><i data-lucide="git-compare"></i> Dual-State Comparison Mode</span>
+                </div>
+                
+                <!-- Tab Controls -->
+                <div class="tabs-container">
+                    <button class="tab-btn active" id="tab-btn-numbers" onclick="switchNationalTab('numbers')"><i data-lucide="bar-chart-2"></i> Metric Averages</button>
+                    <button class="tab-btn" id="tab-btn-rankings" onclick="switchNationalTab('rankings')"><i data-lucide="list-ordered"></i> State Rankings</button>
+                </div>
+                
+                <!-- Tab Pane 1: Numbers -->
+                <div id="tab-pane-numbers" class="tab-pane active">
+                    <div class="metrics-grid-title">All Metric Averages (<span class="active-year-text">2025</span>)</div>
+                    <div class="metrics-grid" id="national-metrics-grid">
+                        <!-- Dynamic National Averages Injected Here -->
+                    </div>
+                </div>
+
+                <!-- Tab Pane 2: Rankings -->
+                <div id="tab-pane-rankings" class="tab-pane">
+                    <div class="card ranking-card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i data-lucide="list-ordered"></i>
+                                <h3 id="ranking-title">State Rankings</h3>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <ul class="ranking-list" id="ranking-list-items">
+                                <!-- Dynamic list items injected -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 2: STATE DEEP DIVE (Active when selectedStateId is a single state) -->
+            <div id="view-state" class="details-view">
+                <div class="view-header state-header">
+                    <div>
+                        <h2 id="state-detail-name">Maharashtra</h2>
+                        <p class="view-subtitle">Capital: <span id="state-detail-capital">Mumbai</span> | Year: <span class="active-year-text">2025</span></p>
+                    </div>
+                    <button class="btn btn-secondary btn-deselect" onclick="deselectState()">
+                        <i data-lucide="arrow-left"></i> India Overview
+                    </button>
+                </div>
+
+                <!-- State KPI Grid -->
+                <div class="metrics-grid-title">State Profile vs. National Average</div>
+                <div class="metrics-grid" id="state-metrics-grid">
+                    <!-- Dynamic State Metrics Injected Here -->
+                </div>
+
+                <!-- Charts Section -->
+                <div class="details-charts-section">
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i data-lucide="trending-up"></i>
+                                <h3 id="chart-trend-title">Historical Trend</h3>
+                            </div>
+                        </div>
+                        <div class="card-body chart-wrapper">
+                            <canvas id="chart-history"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i data-lucide="git-compare"></i>
+                                <h3 id="chart-compare-title">Comparison with National Average</h3>
+                            </div>
+                        </div>
+                        <div class="card-body chart-wrapper">
+                            <canvas id="chart-comparison"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 3: DUAL STATE COMPARISON (Active in Compare Mode when two states selected) -->
+            <div id="view-compare" class="details-view">
+                <div class="view-header state-header">
+                    <div>
+                        <h2><i data-lucide="git-compare"></i> State Comparison</h2>
+                        <p class="view-subtitle" id="compare-states-names">Compare State A vs State B</p>
+                    </div>
+                    <button class="btn btn-secondary btn-deselect" onclick="toggleCompareMode(false)">
+                        <i data-lucide="arrow-left"></i> Exit Compare
+                    </button>
+                </div>
+                
+                <div class="comparison-table-wrapper card">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th id="table-state-a-name">State A</th>
+                                <th id="table-state-b-name">State B</th>
+                                <th>National Avg</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comparison-table-body">
+                            <!-- Injected comparison rows -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="details-charts-section">
+                    <div class="card chart-card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i data-lucide="bar-chart-2"></i>
+                                <h3 id="chart-compare-bar-title">Comparison Chart (2025)</h3>
+                            </div>
+                        </div>
+                        <div class="card-body chart-wrapper">
+                            <canvas id="chart-compare-dual"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Global Insights & News Dialogue Panel (Permanently Visible here) -->
+            <div class="insights-panel card" id="insights-panel-box">
+                <div class="insights-header">
+                    <i data-lucide="sparkles"></i>
+                    <h3>State & National Insights Dialogue</h3>
+                </div>
+                <div class="insights-body">
+                    <div class="insight-block" style="border-bottom: 1px solid rgba(255,255,255,0.03); padding-bottom: 8px; margin-bottom: 4px;">
+                        <div class="insight-block-title"><i data-lucide="info"></i> About the Metric</div>
+                        <div id="insight-definition-text" class="insight-paragraph" style="font-style: italic; color: #cbd5e1;">Loading definition...</div>
+                    </div>
+                    <div class="insight-block">
+                        <div class="insight-block-title"><i data-lucide="lightbulb"></i> Did You Know?</div>
+                        <div id="insight-fact-text">Loading insights...</div>
+                    </div>
+                    <div class="insight-block">
+                        <div class="insight-block-title"><i data-lucide="newspaper"></i> In The News</div>
+                        <div id="insight-news-text">Loading news...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FOOTER & DATA TRANSPARENCY Audit Panel -->
+            <div class="transparency-box card">
+                <div class="transparency-header">
+                    <i data-lucide="alert-circle" class="info-icon"></i>
+                    <h3>Data Transparency & Refresh Audit</h3>
+                </div>
+                <div class="transparency-grid">
+                    <div class="transparency-item">
+                        <span class="label">Source:</span>
+                        <span class="val" id="meta-source">--</span>
+                    </div>
+                    <div class="transparency-item">
+                        <span class="label">Pub Year:</span>
+                        <span class="val" id="meta-pub-year">--</span>
+                    </div>
+                    <div class="transparency-item">
+                        <span class="label">Refreshed:</span>
+                        <span class="val" id="meta-last-refresh">--</span>
+                    </div>
+                    <div class="transparency-item">
+                        <span class="label">Next Release:</span>
+                        <span class="val" id="meta-next-release">--</span>
+                    </div>
+                </div>
+                <div id="aqi-fallback-warning" class="fallback-warning-alert hidden">
+                    <i data-lucide="alert-triangle"></i>
+                    <span><strong>Live API Connection Failure:</strong> Serving cached environmental data from <span id="fallback-timestamp">...</span></span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Leaflet Map JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Custom JS -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
