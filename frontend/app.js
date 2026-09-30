@@ -227,53 +227,92 @@ function normalizeStateName(name) {
     return clean;
 }
 
-// Generate distinct color scales based on metric category
+// Helper: Interpolate smoothly across multiple hex color stops (0.0 to 1.0)
+function interpolateHexStops(pct, hexStops) {
+    const clamped = Math.max(0, Math.min(1, pct));
+    const numSegments = hexStops.length - 1;
+    const scaled = clamped * numSegments;
+    const idx = Math.min(Math.floor(scaled), numSegments - 1);
+    const t = scaled - idx;
+
+    const hexToRgb = (hex) => {
+        const clean = hex.replace("#", "");
+        return [
+            parseInt(clean.substring(0, 2), 16),
+            parseInt(clean.substring(2, 4), 16),
+            parseInt(clean.substring(4, 6), 16)
+        ];
+    };
+
+    const [r1, g1, b1] = hexToRgb(hexStops[idx]);
+    const [r2, g2, b2] = hexToRgb(hexStops[idx + 1]);
+
+    const r = Math.round(r1 + (r2 - r1) * t);
+    const g = Math.round(g1 + (g2 - g1) * t);
+    const b = Math.round(b1 + (b2 - b1) * t);
+
+    return `rgb(${r}, ${g}, ${b})`;
+}
+
+// Helper: Compute dynamic min & max from active state dataset for high visual contrast
+function getDynamicMetricRange(metricKey) {
+    const config = METRICS_CONFIG[metricKey] || { min: 0, max: 100 };
+    if (!nationalData || !nationalData.states || nationalData.states.length === 0) {
+        return { min: config.min, max: config.max };
+    }
+    const dbKey = (metricKey === selectedMetric) ? getSelectedMetricDbKey() : metricKey;
+    const vals = nationalData.states
+        .map(s => s[dbKey])
+        .filter(v => v !== null && v !== undefined && !isNaN(v));
+    if (vals.length < 2) {
+        return { min: config.min, max: config.max };
+    }
+    const actualMin = Math.min(...vals);
+    const actualMax = Math.max(...vals);
+    if (actualMax <= actualMin) {
+        return { min: config.min, max: config.max };
+    }
+    return { min: actualMin, max: actualMax };
+}
+
+// Generate rich multi-stop color gradients based on metric category
 function getChoroplethColor(value, metricKey) {
     if (value === undefined || value === null) return "#1e293b"; // Dark slate for missing data
     
-    const config = METRICS_CONFIG[metricKey];
-    const { min, max } = config;
-    
+    const { min, max } = getDynamicMetricRange(metricKey);
     let pct = (value - min) / (max - min);
-    pct = Math.max(0, Math.min(1, pct)); // Clamp between 0 and 1
-    
-    if (config.reverse) {
-        pct = 1 - pct; // lower values are better (higher saturation/better color)
+    pct = Math.max(0, Math.min(1, pct));
+
+    if (metricKey === "aqi") {
+        // Green -> Yellow -> Orange -> Deep Red
+        return interpolateHexStops(pct, ["#34d399", "#facc15", "#f97316", "#b91c1c"]);
     }
 
     // Categories definition:
-    const catCoreQuality = ["life_index", "literacy_rate", "aqi", "water_quality_score", "water_scarcity_index"];
+    const catCoreQuality = ["life_index", "literacy_rate", "water_quality_score", "water_scarcity_index"];
     const catSocioEconomics = ["per_capita_gsdp", "unemployment_rate", "equality_index", "internet_penetration", "clean_cooking_fuel"];
     const catHealthDemographics = ["infant_mortality_rate", "birth_rate_index", "child_stunting_rate", "crime_against_women", "crime_against_minorities"];
     const catEducationInfra = ["gov_schools_percentage", "pupil_teacher_ratio", "school_infrastructure_score"];
     const catSustainability = ["forest_cover_percentage", "sanitation_score", "renewable_energy_share"];
 
-    let hue = 336;
-    let lightness = 85 - pct * 45; // default scale
-    
     if (catCoreQuality.includes(metricKey)) {
-        // Red to Orange gradient (better is orange, worse is red)
-        hue = 10 + pct * 25; 
-        lightness = 45 + (1 - pct) * 20;
+        // Bright Yellow -> Vibrant Orange -> Deep Crimson Red
+        return interpolateHexStops(pct, ["#fde047", "#f97316", "#b91c1c"]);
     } else if (catSocioEconomics.includes(metricKey)) {
-        // Cyan to Blue
-        hue = 195 + pct * 25;
-        lightness = 80 - pct * 35;
+        // Light Sky Blue -> Vivid Dark Blue -> Deep Purple
+        return interpolateHexStops(pct, ["#7dd3fc", "#1d4ed8", "#581c87"]);
     } else if (catHealthDemographics.includes(metricKey)) {
-        // Violet to Magenta
-        hue = 270 + pct * 50;
-        lightness = 80 - pct * 35;
+        // Soft Pink/Peach -> Vibrant Rose/Magenta -> Deep Plum Purple
+        return interpolateHexStops(pct, ["#fbcfe8", "#e11d48", "#4c1d95"]);
     } else if (catEducationInfra.includes(metricKey)) {
-        // Gold to Amber
-        hue = 48 - pct * 10;
-        lightness = 85 - pct * 35;
+        // Pale Yellow -> Warm Amber/Orange -> Deep Rust Red
+        return interpolateHexStops(pct, ["#fef08a", "#f59e0b", "#991b1b"]);
     } else if (catSustainability.includes(metricKey)) {
-        // Light Green to Dark Green
-        hue = 120;
-        lightness = 75 - pct * 40;
+        // Light Lime Yellow-Green -> Vibrant Emerald -> Deep Teal/Forest
+        return interpolateHexStops(pct, ["#d9f99d", "#10b981", "#064e3b"]);
     }
     
-    return `hsl(${hue}, 75%, ${lightness}%)`;
+    return interpolateHexStops(pct, ["#fde047", "#f97316", "#b91c1c"]);
 }
 
 function updateMap() {
@@ -298,8 +337,8 @@ function updateMap() {
             
             // Check if selected in comparison mode
             const stateId = getStateIdFromProperties(feature.properties);
-            let borderCol = "rgba(255, 255, 255, 0.12)"; // sleeker subtle outline
-            let weight = 0.95;
+            let borderCol = "rgba(15, 23, 42, 0.55)"; // crisp dark contrast border between states
+            let weight = 1.1;
             
             if (compareModeActive) {
                 if (stateId === selectedStateAId) {
@@ -310,8 +349,8 @@ function updateMap() {
                     weight = 2.5;
                 }
             } else if (selectedStateId !== null && stateId === selectedStateId) {
-                borderCol = getMetricCategoryColor(selectedMetric).primary; // Accent outline for single select
-                weight = 3.0;
+                borderCol = "#ffffff"; // High-contrast white outline for selected state
+                weight = 2.8;
             }
 
             return {
@@ -319,7 +358,7 @@ function updateMap() {
                 weight: weight,
                 opacity: 1,
                 color: borderCol,
-                fillOpacity: 0.85
+                fillOpacity: 0.92
             };
         },
         onEachFeature: (feature, layer) => {
@@ -336,7 +375,7 @@ function updateMap() {
                 layer.bindTooltip(`
                     <div class="label-container" style="--label-glow: ${catColors.primary}">
                         <span class="label-name">${shortName}</span>
-                        <span class="label-val" style="color: ${catColors.primary}">${formattedVal}</span>
+                        <span class="label-val">${formattedVal}</span>
                     </div>
                 `, {
                     permanent: true,
@@ -349,11 +388,10 @@ function updateMap() {
             layer.on({
                 mouseover: (e) => {
                     const l = e.target;
-                    const catColors = getMetricCategoryColor(selectedMetric);
                     l.setStyle({
-                        fillOpacity: 0.95,
-                        weight: 2.2,
-                        color: catColors.primary
+                        fillOpacity: 1.0,
+                        weight: 2.4,
+                        color: "#ffffff"
                     });
                     
                     // Force reveal tooltip when zoomed out
@@ -409,7 +447,7 @@ function updateLegend() {
     legend.innerHTML = "";
     
     const config = METRICS_CONFIG[selectedMetric];
-    const { min, max } = config;
+    const { min, max } = getDynamicMetricRange(selectedMetric);
     
     const title = document.createElement("div");
     title.className = "legend-title";
@@ -419,34 +457,22 @@ function updateLegend() {
     const bar = document.createElement("div");
     bar.className = "legend-color-bar";
     
-    if (selectedMetric === 'aqi') {
-        bar.style.background = "linear-gradient(to right, #10b981 0%, #f59e0b 33%, #f97316 66%, #f43f5e 100%)";
-    } else {
-        // Build HSL color bands based on metric category
-        const c1 = getChoroplethColor(min, selectedMetric);
-        const c2 = getChoroplethColor(min + (max - min) / 2, selectedMetric);
-        const c3 = getChoroplethColor(max, selectedMetric);
-        bar.style.background = `linear-gradient(to right, ${c1}, ${c2}, ${c3})`;
-    }
+    const c1 = getChoroplethColor(min, selectedMetric);
+    const c2 = getChoroplethColor(min + (max - min) * 0.25, selectedMetric);
+    const c3 = getChoroplethColor(min + (max - min) * 0.5, selectedMetric);
+    const c4 = getChoroplethColor(min + (max - min) * 0.75, selectedMetric);
+    const c5 = getChoroplethColor(max, selectedMetric);
+    bar.style.background = `linear-gradient(to right, ${c1}, ${c2}, ${c3}, ${c4}, ${c5})`;
     
     legend.appendChild(bar);
     
     const labels = document.createElement("div");
     labels.className = "legend-labels";
-    
-    if (selectedMetric === 'aqi') {
-        labels.innerHTML = `
-            <span>0 (Good)</span>
-            <span>100</span>
-            <span>200+ (Hazard)</span>
-        `;
-    } else {
-        labels.innerHTML = `
-            <span>${config.fmt(min)}</span>
-            <span>${config.fmt(min + (max - min) / 2)}</span>
-            <span>${config.fmt(max)}</span>
-        `;
-    }
+    labels.innerHTML = `
+        <span>${config.fmt(min)}</span>
+        <span>${config.fmt(min + (max - min) / 2)}</span>
+        <span>${config.fmt(max)}</span>
+    `;
     legend.appendChild(labels);
 }
 
