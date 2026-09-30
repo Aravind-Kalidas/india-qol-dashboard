@@ -816,8 +816,16 @@ input:checked + .switch-slider:before {
     font-size: 0.82rem;
 }
 .rank-val {
-    font-weight: 700;
-    font-size: 0.85rem;
+    font-weight: 800;
+    font-size: 0.88rem;
+    letter-spacing: 0.02em;
+    paint-order: stroke fill;
+    -webkit-text-stroke: 1.1px rgba(255, 255, 255, 0.88);
+    text-shadow:
+        -0.5px -0.5px 0 rgba(255, 255, 255, 0.85),
+         0.5px -0.5px 0 rgba(255, 255, 255, 0.85),
+        -0.5px  0.5px 0 rgba(255, 255, 255, 0.85),
+         0.5px  0.5px 0 rgba(255, 255, 255, 0.85);
 }
 
 /* ==========================================
