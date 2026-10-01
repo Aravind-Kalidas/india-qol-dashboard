@@ -72,8 +72,8 @@ def start_server():
     browser_thread.start()
     
     import uvicorn
-    # Start uvicorn server (blocking call)
-    uvicorn.run("backend.main:app", host="127.0.0.1", port=8000, reload=True, reload_dirs=[os.path.join(root_dir, "backend")])
+    # Start uvicorn server (blocking call) - bind to 0.0.0.0 for local network mobile access
+    uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True, reload_dirs=[os.path.join(root_dir, "backend")])
 
 if __name__ == "__main__":
     print("=================================================================")
