@@ -200,6 +200,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         resizeTimer = setTimeout(() => {
             if (map) {
                 map.invalidateSize();
+                if (selectedStateId === null) {
+                    fitMapToContainer();
+                }
                 handleMapZoomChange();
             }
         }, 150);
@@ -213,18 +216,50 @@ document.addEventListener("DOMContentLoaded", async () => {
 // ==========================================
 // MAP & VISUAL CONTROLLER
 // ==========================================
+let hasInitialMapFitted = false;
+
+function fitMapToContainer() {
+    if (!map) return;
+    const isMobile = window.innerWidth < 768;
+    // Bounding box of India:
+    // South tip (Tamil Nadu/Kerala) ~8.0° N, North (Ladakh) ~37.1° N
+    // West (Gujarat) ~68.1° E, East (Arunachal) ~97.4° E
+    const indiaBounds = L.latLngBounds([
+        [8.0, 68.2],
+        [37.2, 97.4]
+    ]);
+    
+    if (isMobile) {
+        // Mobile portrait: fit bounds with padding for header/controls and bottom timeline
+        map.fitBounds(indiaBounds, {
+            paddingTopLeft: [10, 56],
+            paddingBottomRight: [10, 48],
+            maxZoom: 4.6
+        });
+    } else {
+        // Desktop: wide canvas, fit with minimal padding to eliminate blank space
+        map.fitBounds(indiaBounds, {
+            paddingTopLeft: [50, 40],
+            paddingBottomRight: [35, 40],
+            maxZoom: 5.6
+        });
+    }
+}
+
 function initMap() {
     const isMobile = window.innerWidth < 768;
-    const mobileCenter = [22.4, 79.5];
-    const mobileZoom = window.innerWidth < 420 ? 3.8 : 4.0;
+    // Accurately center Mainland India [22.8° N, 82.0° E]
+    const initialCenter = isMobile ? [23.0, 82.5] : [22.8, 82.0];
+    const initialZoom = isMobile ? (window.innerWidth < 400 ? 4.15 : 4.35) : 5.05;
+    
     map = L.map("map", {
-        zoomSnap: 0.1,
+        zoomSnap: 0.05,
         zoomDelta: 0.5,
         minZoom: 3,
         maxZoom: 8,
         attributionControl: false,
         zoomControl: false
-    }).setView(isMobile ? mobileCenter : [22.1, 78.5], isMobile ? mobileZoom : 4.4);
+    }).setView(initialCenter, initialZoom);
     
     L.control.zoom({ position: 'topright' }).addTo(map);
 }
@@ -454,6 +489,10 @@ function updateMap() {
     }).addTo(map);
 
     handleMapZoomChange();
+    if (!hasInitialMapFitted && geoJsonData) {
+        fitMapToContainer();
+        hasInitialMapFitted = true;
+    }
     updateLegend();
 }
 
@@ -1312,6 +1351,7 @@ function deselectState() {
     selectedStateBId = null;
     refreshActiveView();
     updateMap();
+    fitMapToContainer();
 
     // On mobile, smoothly return view to map
     if (window.innerWidth < 768) {
