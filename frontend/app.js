@@ -192,6 +192,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     await loadDashboardData();
     
     map.on('zoomend', handleMapZoomChange);
+
+    // Responsive window resize & orientation change handler
+    let resizeTimer = null;
+    const handleViewportResize = () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            if (map) {
+                map.invalidateSize();
+                handleMapZoomChange();
+            }
+        }, 150);
+    };
+    window.addEventListener("resize", handleViewportResize);
+    window.addEventListener("orientationchange", () => {
+        setTimeout(handleViewportResize, 250);
+    });
 });
 
 // ==========================================
@@ -206,7 +222,7 @@ function initMap() {
         maxZoom: 8,
         attributionControl: false,
         zoomControl: false
-    }).setView([22.1, 78.5], isMobile ? 3.6 : 4.4);
+    }).setView(isMobile ? [22.8, 80.2] : [22.1, 78.5], isMobile ? 3.5 : 4.4);
     
     L.control.zoom({ position: 'topright' }).addTo(map);
 }
@@ -484,8 +500,10 @@ function updateLegend() {
 function handleMapZoomChange() {
     if (!map) return;
     const zoom = map.getZoom();
+    const isMobile = window.innerWidth < 768;
+    const minZoom = isMobile ? 3.2 : 4.2;
     const mapElement = document.getElementById("map");
-    if (!showMapNumbers || zoom < 4.2) {
+    if (!showMapNumbers || zoom < minZoom) {
         mapElement.classList.add("leaflet-zoom-hide-labels");
     } else {
         mapElement.classList.remove("leaflet-zoom-hide-labels");
@@ -1265,11 +1283,25 @@ function handleStateClick(stateId) {
     }
 }
 
+function scrollToStats() {
+    const detailsCol = document.querySelector(".details-column");
+    if (detailsCol) {
+        detailsCol.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+}
+
 function selectState(stateId) {
     showMapNumbers = true;
     selectedStateId = stateId;
     refreshActiveView();
     updateMap();
+
+    // On mobile, smoothly scroll down to reveal state profile & charts
+    if (window.innerWidth < 768) {
+        setTimeout(() => {
+            scrollToStats();
+        }, 80);
+    }
 }
 
 function deselectState() {
@@ -1278,6 +1310,14 @@ function deselectState() {
     selectedStateBId = null;
     refreshActiveView();
     updateMap();
+
+    // On mobile, smoothly return view to map
+    if (window.innerWidth < 768) {
+        const mapCol = document.querySelector(".map-column");
+        if (mapCol) {
+            mapCol.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+    }
 }
 
 // Year slider change event

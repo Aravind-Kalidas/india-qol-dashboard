@@ -1079,14 +1079,27 @@ input:checked + .switch-slider:before {
    RESPONSIVE DESIGN BREAKPOINTS
    ========================================== */
 @media (max-width: 1024px) {
+    html, body {
+        height: auto;
+        min-height: 100%;
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
     .dashboard-wrapper {
         flex-direction: column;
-        overflow-y: auto;
         height: auto;
+        min-height: 100vh;
+        width: 100%;
+        overflow-x: hidden;
+        overflow-y: visible;
     }
     
     .map-column {
-        flex: 0 0 520px;
+        flex: 0 0 auto;
+        height: 520px;
+        min-height: 480px;
         width: 100%;
         border-right: none;
         border-bottom: 1px solid var(--border-subtle);
@@ -1097,6 +1110,7 @@ input:checked + .switch-slider:before {
         width: 100%;
         height: auto;
         overflow-y: visible;
+        padding: 16px 16px;
     }
     
     .timeline-player-overlay {
@@ -1105,22 +1119,297 @@ input:checked + .switch-slider:before {
 }
 
 @media (max-width: 768px) {
+    .map-column {
+        height: 480px;
+        min-height: 440px;
+    }
+
+    /* Single-line sleek compact header on mobile */
     .app-header-compact {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        padding: 8px 12px;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 1001;
+    }
+    .header-logo {
+        gap: 8px;
+    }
+    .logo-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+    }
+    .header-logo h1 {
+        font-size: 0.88rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .header-logo p.subtitle {
+        display: none;
     }
     .header-actions {
-        width: 100%;
-        justify-content: space-between;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
-    
+    .status-badge {
+        padding: 3px 8px;
+        font-size: 0.65rem;
+    }
+    .btn-icon-only {
+        width: 26px;
+        height: 26px;
+    }
+
+    /* Floating Metric selector overlay positioned below header without overlap */
     .map-controls-overlay {
-        width: calc(100% - 32px);
+        position: absolute;
+        top: 56px;
+        left: 10px;
+        right: 10px;
+        width: auto;
+        padding: 8px 10px;
+        gap: 5px;
+        border-radius: 12px;
+        z-index: 1000;
     }
-    
+    .selector-group label {
+        font-size: 0.66rem;
+    }
+    .selector-group select {
+        font-size: 0.78rem;
+        padding: 5px 8px;
+        height: 34px;
+    }
+    .slicer-group {
+        padding-top: 4px;
+    }
+    .slicer-pill {
+        padding: 4px 0;
+        font-size: 0.68rem;
+    }
+
+    /* Zoom control positioned safely */
+    .leaflet-top.leaflet-right {
+        top: 135px !important;
+        right: 10px !important;
+    }
+    .leaflet-bar {
+        border-radius: 8px !important;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+    }
+    .leaflet-bar a {
+        width: 32px !important;
+        height: 32px !important;
+        line-height: 32px !important;
+        background-color: rgba(15, 23, 42, 0.85) !important;
+        color: #ffffff !important;
+        backdrop-filter: blur(8px);
+    }
+
+    /* Map Legend stacked neatly on bottom-left */
+    .map-legend {
+        position: absolute;
+        bottom: 58px;
+        left: 10px;
+        width: 160px;
+        padding: 6px 10px;
+        border-radius: 10px;
+        z-index: 999;
+    }
+    .legend-title {
+        font-size: 0.6rem;
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .legend-color-bar {
+        height: 6px;
+        margin-bottom: 2px;
+    }
+    .legend-labels {
+        font-size: 0.6rem;
+    }
+
+    /* Mobile Quick Scroll Down button on bottom-right */
+    .mobile-scroll-btn {
+        display: inline-flex !important;
+        position: absolute;
+        bottom: 58px;
+        right: 10px;
+        z-index: 1000;
+        background: rgba(15, 23, 42, 0.88);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--border-glass);
+        color: #ffffff;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        align-items: center;
+        gap: 4px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        cursor: pointer;
+        text-decoration: none;
+        transition: var(--transition-fast);
+    }
+    .mobile-scroll-btn:hover {
+        background: rgba(30, 41, 59, 0.95);
+        color: #ffffff;
+    }
+
+    /* Timeline Player anchored cleanly across bottom */
+    .timeline-player-overlay {
+        position: absolute;
+        bottom: 8px;
+        left: 10px;
+        right: 10px;
+        width: auto;
+        transform: none;
+        padding: 6px 10px;
+        gap: 8px;
+        border-radius: 14px;
+        z-index: 999;
+    }
+    .timeline-active-year {
+        font-size: 1rem;
+        min-width: 30px;
+    }
+    .timeline-years {
+        font-size: 0.58rem;
+        padding: 0 2px;
+    }
+    .aqi-switcher-row {
+        gap: 6px;
+    }
+    .aqi-switcher-row select {
+        width: 82px;
+        font-size: 0.72rem;
+        padding: 3px 4px;
+    }
+
+    /* Centroid Map Labels scaled for mobile */
+    .state-map-label .label-name {
+        font-size: 0.62rem;
+    }
+    .state-map-label .label-val {
+        font-size: 0.72rem;
+    }
+
+    /* Details Column & Cards on Mobile */
+    .details-column {
+        padding: 14px 10px;
+        gap: 12px;
+    }
+    .view-header h2 {
+        font-size: 1.1rem;
+    }
+    .view-subtitle {
+        font-size: 0.72rem;
+    }
+    .tabs-container {
+        gap: 6px;
+        margin-bottom: 12px;
+    }
+    .tab-btn {
+        flex: 1;
+        justify-content: center;
+        padding: 8px 6px;
+        font-size: 0.75rem;
+        min-height: 38px;
+    }
     .metrics-grid {
         grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    .profile-card {
+        padding: 10px 12px;
+        border-radius: 10px;
+    }
+    .profile-title {
+        font-size: 0.72rem;
+    }
+    .profile-value {
+        font-size: 1.2rem;
+    }
+    .world-avg-val {
+        font-size: 0.82rem;
+    }
+    .ranking-item {
+        padding: 8px 10px;
+    }
+    .ranking-item .rank-name {
+        font-size: 0.78rem;
+    }
+    .ranking-item .rank-val {
+        font-size: 0.82rem;
+    }
+    .chart-container {
+        height: 180px;
+    }
+    .state-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    .state-header .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    .transparency-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px 12px;
+        padding: 10px 12px;
+    }
+    .transparency-item .val {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .map-column {
+        height: 450px;
+        min-height: 420px;
+    }
+    .header-logo h1 {
+        font-size: 0.82rem;
+    }
+    .status-badge .badge-text {
+        font-size: 0.6rem;
+    }
+    .map-controls-overlay {
+        top: 52px;
+        padding: 6px 8px;
+    }
+    .leaflet-top.leaflet-right {
+        top: 128px !important;
+    }
+    .map-legend {
+        width: 145px;
+        bottom: 56px;
+        padding: 5px 8px;
+    }
+    .mobile-scroll-btn {
+        bottom: 56px;
+        padding: 4px 8px;
+        font-size: 0.64rem;
+    }
+    .timeline-player-overlay {
+        padding: 5px 8px;
+        gap: 6px;
+    }
+    .timeline-active-year {
+        font-size: 0.92rem;
     }
 }
 
