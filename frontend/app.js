@@ -1,12 +1,12 @@
 // Global State variables
-let selectedMetric = "literacy_rate";
+let selectedMetric = "life_index";
 let selectedSlice = "overall"; // overall, male, female, rural, urban
 let selectedStateId = null; // null means National Overview
 let activeYear = 2025; // timeline year
 let activeMonth = 6; // timeline month (for AQI daily)
 let activeDay = 15; // timeline day (for AQI daily)
 let activeNationalTab = "numbers"; // numbers, rankings
-let showMapNumbers = false; // Hide map numbers on initial load until user clicks something
+let showMapNumbers = true; // Lead with state scores & labels on initial load
 
 // Comparison Mode state
 let compareModeActive = false;
