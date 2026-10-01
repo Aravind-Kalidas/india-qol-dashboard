@@ -215,6 +215,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 // ==========================================
 function initMap() {
     const isMobile = window.innerWidth < 768;
+    const mobileCenter = [22.4, 79.5];
+    const mobileZoom = window.innerWidth < 420 ? 3.8 : 4.0;
     map = L.map("map", {
         zoomSnap: 0.1,
         zoomDelta: 0.5,
@@ -222,7 +224,7 @@ function initMap() {
         maxZoom: 8,
         attributionControl: false,
         zoomControl: false
-    }).setView(isMobile ? [22.8, 80.2] : [22.1, 78.5], isMobile ? 3.5 : 4.4);
+    }).setView(isMobile ? mobileCenter : [22.1, 78.5], isMobile ? mobileZoom : 4.4);
     
     L.control.zoom({ position: 'topright' }).addTo(map);
 }

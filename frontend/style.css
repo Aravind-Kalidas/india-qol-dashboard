@@ -1098,8 +1098,9 @@ input:checked + .switch-slider:before {
     
     .map-column {
         flex: 0 0 auto;
-        height: 520px;
-        min-height: 480px;
+        height: 72vh;
+        height: 72dvh;
+        min-height: 500px;
         width: 100%;
         border-right: none;
         border-bottom: 1px solid var(--border-subtle);
@@ -1120,8 +1121,9 @@ input:checked + .switch-slider:before {
 
 @media (max-width: 768px) {
     .map-column {
-        height: 480px;
-        min-height: 440px;
+        height: 72vh;
+        height: 72dvh;
+        min-height: 480px;
     }
 
     /* Single-line sleek compact header on mobile */
@@ -1378,8 +1380,9 @@ input:checked + .switch-slider:before {
 
 @media (max-width: 480px) {
     .map-column {
-        height: 450px;
-        min-height: 420px;
+        height: 72vh;
+        height: 72dvh;
+        min-height: 460px;
     }
     .header-logo h1 {
         font-size: 0.82rem;
