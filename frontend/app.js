@@ -220,8 +220,13 @@ let hasInitialMapFitted = false;
 
 function fitMapToContainer() {
     if (!map) return;
-    const isMobile = window.innerWidth < 768;
-    // Bounding box of India:
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const aspect = width / height;
+    const isMobile = width < 768;
+    const isHalfScreenOrPortrait = aspect < 1.15 || width <= 1080;
+    
+    // Bounding box of Mainland India:
     // South tip (Tamil Nadu/Kerala) ~8.0° N, North (Ladakh) ~37.1° N
     // West (Gujarat) ~68.1° E, East (Arunachal) ~97.4° E
     const indiaBounds = L.latLngBounds([
@@ -233,11 +238,18 @@ function fitMapToContainer() {
         // Mobile portrait: fit bounds with padding for header/controls and bottom timeline
         map.fitBounds(indiaBounds, {
             paddingTopLeft: [10, 56],
-            paddingBottomRight: [10, 48],
+            paddingBottomRight: [10, 50],
             maxZoom: 4.6
         });
+    } else if (isHalfScreenOrPortrait) {
+        // 8:9 Half-screen snapped window or portrait desktop (e.g. 960x1080, 720x900)
+        map.fitBounds(indiaBounds, {
+            paddingTopLeft: [24, 75],
+            paddingBottomRight: [24, 65],
+            maxZoom: 5.2
+        });
     } else {
-        // Desktop: wide canvas, fit with minimal padding to eliminate blank space
+        // Wide canvas 16:9 full-screen desktop
         map.fitBounds(indiaBounds, {
             paddingTopLeft: [50, 40],
             paddingBottomRight: [35, 40],
@@ -247,10 +259,23 @@ function fitMapToContainer() {
 }
 
 function initMap() {
-    const isMobile = window.innerWidth < 768;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    const aspect = width / height;
+    const isMobile = width < 768;
+    const isHalfScreenOrPortrait = aspect < 1.15 || width <= 1080;
+    
     // Accurately center Mainland India [22.8° N, 82.0° E]
-    const initialCenter = isMobile ? [23.0, 82.5] : [22.8, 82.0];
-    const initialZoom = isMobile ? (window.innerWidth < 400 ? 4.15 : 4.35) : 5.05;
+    let initialCenter = [22.8, 82.0];
+    let initialZoom = 5.05;
+    
+    if (isMobile) {
+        initialCenter = [23.0, 82.5];
+        initialZoom = width < 400 ? 4.15 : 4.35;
+    } else if (isHalfScreenOrPortrait) {
+        initialCenter = [23.0, 82.2];
+        initialZoom = 4.75;
+    }
     
     map = L.map("map", {
         zoomSnap: 0.05,
@@ -510,11 +535,19 @@ function updateLegend() {
     
     const config = METRICS_CONFIG[selectedMetric];
     const { min, max } = getDynamicMetricRange(selectedMetric);
+    const isReverse = config.reverse || false;
+    const metricTitle = config.unit ? `${config.label} (${config.unit.trim()})` : config.label;
     
-    const title = document.createElement("div");
-    title.className = "legend-title";
-    title.innerText = config.unit ? `${config.label} (${config.unit.trim()})` : config.label;
-    legend.appendChild(title);
+    // Header row with title & polarity pill (Higher is better / Lower is better)
+    const header = document.createElement("div");
+    header.className = "legend-header";
+    header.innerHTML = `
+        <span class="legend-title" title="${metricTitle}">${metricTitle}</span>
+        <span class="legend-polarity ${isReverse ? 'lower-better' : 'higher-better'}">
+            ${isReverse ? '↓ Lower is better' : '↑ Higher is better'}
+        </span>
+    `;
+    legend.appendChild(header);
     
     const bar = document.createElement("div");
     bar.className = "legend-color-bar";
@@ -525,15 +558,16 @@ function updateLegend() {
     const c4 = getChoroplethColor(min + (max - min) * 0.75, selectedMetric);
     const c5 = getChoroplethColor(max, selectedMetric);
     bar.style.background = `linear-gradient(to right, ${c1}, ${c2}, ${c3}, ${c4}, ${c5})`;
-    
     legend.appendChild(bar);
     
     const labels = document.createElement("div");
     labels.className = "legend-labels";
+    const minDesc = isReverse ? 'Best' : 'Worst';
+    const maxDesc = isReverse ? 'Worst' : 'Best';
     labels.innerHTML = `
-        <span>${config.fmt(min)}</span>
-        <span>${config.fmt(min + (max - min) / 2)}</span>
-        <span>${config.fmt(max)}</span>
+        <span class="legend-label-endpoint">${config.fmt(min)} <small>(${minDesc})</small></span>
+        <span class="legend-label-mid">${config.fmt(min + (max - min) / 2)}</span>
+        <span class="legend-label-endpoint">${config.fmt(max)} <small>(${maxDesc})</small></span>
     `;
     legend.appendChild(labels);
 }
@@ -541,8 +575,8 @@ function updateLegend() {
 function handleMapZoomChange() {
     if (!map) return;
     const zoom = map.getZoom();
-    const isMobile = window.innerWidth < 768;
-    const minZoom = isMobile ? 3.2 : 4.2;
+    const width = window.innerWidth;
+    const minZoom = width < 768 ? 3.2 : 3.6;
     const mapElement = document.getElementById("map");
     if (!showMapNumbers || zoom < minZoom) {
         mapElement.classList.add("leaflet-zoom-hide-labels");

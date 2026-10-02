@@ -261,7 +261,8 @@ select optgroup {
     bottom: 20px;
     left: 16px;
     z-index: 1000;
-    width: 280px;
+    width: 300px;
+    max-width: calc(100% - 32px);
     background: var(--bg-glass);
     backdrop-filter: blur(var(--blur-intensity));
     border: 1px solid var(--border-glass);
@@ -269,13 +270,49 @@ select optgroup {
     padding: 10px 14px;
     box-shadow: var(--shadow-soft);
 }
+.legend-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+}
 .legend-title {
     font-weight: 700;
     font-size: 0.72rem;
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    margin-bottom: 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
+}
+.legend-polarity {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    padding: 2px 7px;
+    border-radius: 12px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    line-height: 1.2;
+}
+.legend-polarity.higher-better {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+}
+.legend-polarity.lower-better {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.2);
 }
 .legend-color-bar {
     height: 10px;
@@ -286,9 +323,15 @@ select optgroup {
 .legend-labels {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     font-size: 0.72rem;
     font-weight: 600;
     color: var(--text-secondary);
+}
+.legend-label-endpoint small {
+    font-size: 0.6rem;
+    font-weight: 500;
+    opacity: 0.75;
 }
 
 #map {
@@ -1078,7 +1121,7 @@ input:checked + .switch-slider:before {
 /* ==========================================
    RESPONSIVE DESIGN BREAKPOINTS
    ========================================== */
-@media (max-width: 1024px) {
+@media (max-width: 1100px) {
     html, body {
         height: auto;
         min-height: 100%;
@@ -1100,7 +1143,7 @@ input:checked + .switch-slider:before {
         flex: 0 0 auto;
         height: 72vh;
         height: 72dvh;
-        min-height: 500px;
+        min-height: 520px;
         width: 100%;
         border-right: none;
         border-bottom: 1px solid var(--border-subtle);
@@ -1111,22 +1154,10 @@ input:checked + .switch-slider:before {
         width: 100%;
         height: auto;
         overflow-y: visible;
-        padding: 16px 16px;
-    }
-    
-    .timeline-player-overlay {
-        width: calc(100vw - 32px);
-    }
-}
-
-@media (max-width: 768px) {
-    .map-column {
-        height: 75vh;
-        height: 75dvh;
-        min-height: 520px;
+        padding: 16px 14px;
     }
 
-    /* Single-line sleek compact header on mobile */
+    /* Single-line sleek compact header on half-screen / tablet */
     .app-header-compact {
         position: absolute;
         top: 10px;
@@ -1149,7 +1180,7 @@ input:checked + .switch-slider:before {
         border-radius: 6px;
     }
     .header-logo h1 {
-        font-size: 0.88rem;
+        font-size: 0.9rem;
         font-weight: 700;
         white-space: nowrap;
     }
@@ -1175,8 +1206,9 @@ input:checked + .switch-slider:before {
         position: absolute;
         top: 56px;
         left: 10px;
-        right: 10px;
-        width: auto;
+        right: auto;
+        width: 320px;
+        max-width: calc(100% - 20px);
         padding: 8px 10px;
         gap: 5px;
         border-radius: 12px;
@@ -1223,27 +1255,29 @@ input:checked + .switch-slider:before {
         position: absolute;
         bottom: 58px;
         left: 10px;
-        width: 160px;
+        width: 250px;
+        max-width: calc(100% - 90px);
         padding: 6px 10px;
         border-radius: 10px;
         z-index: 999;
     }
     .legend-title {
-        font-size: 0.6rem;
+        font-size: 0.62rem;
         margin-bottom: 2px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+    }
+    .legend-polarity {
+        font-size: 0.6rem;
+        padding: 1px 6px;
     }
     .legend-color-bar {
         height: 6px;
         margin-bottom: 2px;
     }
     .legend-labels {
-        font-size: 0.6rem;
+        font-size: 0.62rem;
     }
 
-    /* Mobile Quick Scroll Down button on bottom-right */
+    /* Mobile / Half-screen Quick Scroll Down button on bottom-right */
     .mobile-scroll-btn {
         display: inline-flex !important;
         position: absolute;
@@ -1300,7 +1334,7 @@ input:checked + .switch-slider:before {
         padding: 3px 4px;
     }
 
-    /* Centroid Map Labels scaled for mobile */
+    /* Centroid Map Labels scaled for half-screen & mobile */
     .state-map-label .label-name {
         font-size: 0.62rem;
     }
@@ -1308,16 +1342,10 @@ input:checked + .switch-slider:before {
         font-size: 0.72rem;
     }
 
-    /* Details Column & Cards on Mobile */
-    .details-column {
-        padding: 14px 10px;
-        gap: 12px;
-    }
-    .view-header h2 {
-        font-size: 1.1rem;
-    }
-    .view-subtitle {
-        font-size: 0.72rem;
+    /* Responsive grid on half-screen */
+    .metrics-grid {
+        grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+        gap: 8px;
     }
     .tabs-container {
         gap: 6px;
@@ -1330,6 +1358,40 @@ input:checked + .switch-slider:before {
         font-size: 0.75rem;
         min-height: 38px;
     }
+}
+
+@media (max-width: 768px) {
+    .map-column {
+        height: 75vh;
+        height: 75dvh;
+        min-height: 500px;
+    }
+
+    .map-controls-overlay {
+        width: auto;
+        right: 10px;
+    }
+
+    .map-legend {
+        width: 215px;
+        max-width: calc(100% - 85px);
+        padding: 6px 9px;
+    }
+    .legend-title {
+        font-size: 0.6rem;
+    }
+    .legend-polarity {
+        font-size: 0.56rem;
+        padding: 1px 5px;
+    }
+    .legend-labels {
+        font-size: 0.6rem;
+    }
+    .legend-label-endpoint small {
+        font-size: 0.52rem;
+    }
+
+    /* Single column cards on phone screens */
     .metrics-grid {
         grid-template-columns: 1fr;
         gap: 8px;
@@ -1382,7 +1444,7 @@ input:checked + .switch-slider:before {
     .map-column {
         height: 75vh;
         height: 75dvh;
-        min-height: 480px;
+        min-height: 460px;
     }
     .header-logo h1 {
         font-size: 0.82rem;
@@ -1391,23 +1453,38 @@ input:checked + .switch-slider:before {
         font-size: 0.6rem;
     }
     .map-controls-overlay {
-        top: 52px;
+        top: 50px;
         padding: 6px 8px;
     }
     .leaflet-top.leaflet-right {
-        top: 128px !important;
+        top: 125px !important;
     }
     .map-legend {
-        width: 145px;
-        bottom: 56px;
+        width: 195px;
+        max-width: calc(100% - 78px);
+        bottom: 54px;
         padding: 5px 8px;
     }
+    .legend-title {
+        font-size: 0.56rem;
+    }
+    .legend-polarity {
+        font-size: 0.52rem;
+        padding: 1px 4px;
+    }
+    .legend-labels {
+        font-size: 0.56rem;
+    }
     .mobile-scroll-btn {
-        bottom: 56px;
+        bottom: 54px;
+        right: 8px;
         padding: 4px 8px;
-        font-size: 0.64rem;
+        font-size: 0.62rem;
     }
     .timeline-player-overlay {
+        bottom: 6px;
+        left: 8px;
+        right: 8px;
         padding: 5px 8px;
         gap: 6px;
     }
